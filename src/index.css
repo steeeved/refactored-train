@@ -1,0 +1,41 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  padding: 50px;
+}
+
+button {
+  cursor: pointer;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 20px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  gap: 30px;
+}
+
+.lazylog-container {
+  width: 100%;
+  min-height: 80vh;
+  overflow: hidden;
+}
+
+
+.lazylog-container > * {
+  font-size: 16px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.selected {
+  background-color: lightblue; /* Change this to your preferred color */
+}
