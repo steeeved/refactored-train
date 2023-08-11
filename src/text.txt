@@ -1,0 +1,59 @@
+const express = require('express');
+const app = express();
+const fs = require('fs');
+const path = require('path');
+const http = require('http').createServer(app);
+const io = require('socket.io')(http, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+const chokidar = require('chokidar');
+const cors = require('cors'); // Import cors
+
+const logDirectory = '/home/ec2-user/.pm2/logs';
+const clients = [];
+
+// Use cors middleware for all routes
+app.use(cors());
+
+io.on('connection', (socket) => {
+  clients.push(socket);
+
+  socket.on('disconnect', () => {
+    const index = clients.indexOf(socket);
+    if (index !== -1) {
+      clients.splice(index, 1);
+    }
+  });
+});
+
+app.get('/logs/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(logDirectory, filename);
+
+  fs.readFile(filePath, 'utf-8', (err, content) => {
+    if (err) {
+      res.status(500).json({ error: 'Error reading the log file' });
+    } else {
+      res.send(content);
+    }
+  });
+});
+
+http.listen(4000, () => {
+  console.log('Server is running on port 4000');
+
+  const logWatcher = chokidar.watch(logDirectory);
+  logWatcher.on('change', (filePath) => {
+    const filename = path.basename(filePath);
+    fs.readFile(filePath, 'utf-8', (err, content) => {
+      if (!err) {
+        clients.forEach((client) => {
+          client.emit('logUpdate', { filename, content });
+        });
+      }
+    });
+  });
+});
